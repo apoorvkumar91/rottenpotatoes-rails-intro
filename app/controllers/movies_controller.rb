@@ -11,7 +11,58 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    @all_ratings=Movie.ratings
+
+    if(params[:ratings].present?)
+    
+          session[:ratings] = params[:ratings]
+          if (session[:sort_by].present? and (not params[:sort_by].present?) )
+          
+                @movies = Movie.where("rating in (?)", params[:ratings].keys).order(session[:sort_by])
+          else 
+            
+                @movies = Movie.where("rating in (?)", params[:ratings].keys).order(params[:sort_by])
+                
+                session[:sort_by] = params[:sort_by]
+                
+          end
+          
+    elsif(session[:ratings].present?)
+        
+          if (session[:sort_by].present? and (not params[:sort_by].present?) )
+          
+                @movies = Movie.where("rating in (?)", session[:ratings].keys).order(session[:sort_by])
+          else
+            
+                @movies = Movie.where("rating in (?)", session[:ratings].keys).order(params[:sort_by])
+                
+                session[:sort_by] = params[:sort_by]
+                
+          end
+          
+    elsif
+            @movies = Movie.order(params[:sort_by])
+
+    end
+    
+    if params[:sort_by] == 'title' 
+    
+            @title_header= 'hilite'
+            
+    elsif params[:sort_by] == 'release_date'
+    
+            @release_header ='hilite'
+            
+    elsif session[:sort_by] == 'title'
+    
+            @title_header ='hilite'
+            
+    elsif session[:sort_by] == 'release_date'
+    
+            @release_header ='hilite'
+       
+    end
+    
   end
 
   def new
@@ -42,4 +93,7 @@ class MoviesController < ApplicationController
     redirect_to movies_path
   end
 
+  
+  
+  
 end
